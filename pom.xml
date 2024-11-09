@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example</groupId>
+    <artifactId>RT_Streaming_Demo</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <scala.version>2.12</scala.version> <!-- Scala version 2.12 -->
+    </properties>
+
+    <dependencies>
+        <!-- Kafka Producer dependencies (Kafka 3.9.0) -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>3.9.0</version> <!-- Kafka version 3.9.0 -->
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-connector-kafka -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-kafka</artifactId>
+            <version>3.3.0-1.20</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-streaming-java -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-streaming-java</artifactId>
+            <version>1.20.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-java -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-java</artifactId>
+            <version>1.20.0</version>
+        </dependency>
+
+        <!-- Spark Core Dependency (Spark 3.5.3) -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_2.12</artifactId>
+            <version>3.5.3</version> <!-- Spark version 3.5.3 -->
+        </dependency>
+
+        <!-- Spark Streaming Dependency (Spark 3.5.3) -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming_2.12</artifactId>
+            <version>3.5.3</version> <!-- Spark version 3.5.3 -->
+        </dependency>
+
+        <!-- Spark Kafka Integration (Spark 3.5.3) -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming-kafka-0-10_2.12</artifactId>
+            <version>3.5.3</version> <!-- Spark Streaming Kafka Integration version 3.5.3 -->
+        </dependency>
+
+
+        <!-- Kafka Streams (Optional: if you need Kafka Streams in your project) -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-streams</artifactId>
+            <version>3.9.0</version> <!-- Kafka Streams version 3.9.0 -->
+        </dependency>
+    </dependencies>
+
+    <!-- Repository to resolve Flink and Kafka dependencies -->
+    <repositories>
+        <repository>
+            <id>apache.flink</id>
+            <url>https://repository.apache.org/content/repositories/releases/</url>
+        </repository>
+    </repositories>
+
+    <!-- Build Configuration with Maven Shade Plugin -->
+    <build>
+        <plugins>
+            <!-- Maven Shade Plugin for creating an uber-jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <!-- This specifies the main class to run when executing the jar -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>org.example.FlinkKafkaConsumerExample</mainClass> <!-- Your main class -->
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
