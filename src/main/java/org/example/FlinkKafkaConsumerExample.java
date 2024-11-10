@@ -22,7 +22,6 @@ public class FlinkKafkaConsumerExample {
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092"); // Kafka broker
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "flink-group");
 
-
         // Create a Kafka consumer
         FlinkKafkaConsumer<String> consumer = new FlinkKafkaConsumer<>(
                 "flink_topic",                    // Topic name
@@ -33,17 +32,26 @@ public class FlinkKafkaConsumerExample {
         // Create the data stream
         DataStream<String> stream = env.addSource(consumer);
 
-        // Process the stream
+        // Process the stream: Extract movie_id, action (view/rate), and rating (if applicable)
         DataStream<Tuple2<String, Integer>> result = stream
                 .map(new MapFunction<String, Tuple2<String, Integer>>() {
                     @Override
                     public Tuple2<String, Integer> map(String value) throws Exception {
-                        return new Tuple2<>(value, value.length());  // Example processing
+                        // Parse the incoming JSON message
+                        String movieId = value.split("\"movie_id\": \"")[1].split("\"")[0];
+                        String action = value.split("\"action\": \"")[1].split("\"")[0];
+                        int rating = action.equals("rate") ? Integer.parseInt(value.split("\"rating\": ")[1].split(",")[0]) : 0;
+
+                        // Emit movie_id and the corresponding view/rating count
+                        return new Tuple2<>(movieId, rating);
                     }
                 });
 
-        // Print the result
-        result.print();
+        // Aggregate the data: Count views and ratings per movie
+        result
+                .keyBy(0)  // Group by movie_id
+                .sum(1)    // Sum the ratings (can be extended for other metrics like views)
+                .print();
 
         // Execute the job
         env.execute("Flink Kafka Consumer Example");
