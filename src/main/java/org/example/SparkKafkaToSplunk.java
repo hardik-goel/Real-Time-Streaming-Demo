@@ -1,3 +1,4 @@
+package org.example;
 import org.apache.spark.SparkConf;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.api.java.JavaDStream;
@@ -9,14 +10,10 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.functions;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.client.methods.HttpUriRequestBase;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.client.methods.HttpUriRequestBase;
-import org.apache.http.impl.client.HttpClient;
-
+import org.apache.http.client.HttpClient;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,12 +47,12 @@ public class SparkKafkaToSplunk {
                         .getOrCreate();
 
                 // Process the incoming data (e.g., convert to DataFrame)
-                Dataset<Row> df = spark.read().json(rdd.map(ConsumerRecord::value, String.class));
+                Dataset<Row> df = spark.read().json(rdd.map(ConsumerRecord::value));
 
                 // Example: simple filtering or aggregation (adjust per your use case)
                 Dataset<Row> completedTripsDF = df.filter(df.col("trip_status").equalTo("completed"));
 
-                // Send to Splunk for indexing
+                // Send each completed trip event to Splunk for indexing
                 completedTripsDF.foreach(row -> {
                     String splunkEvent = row.toString();  // Convert row to string format for Splunk
 
@@ -73,8 +70,8 @@ public class SparkKafkaToSplunk {
     // Function to send event to Splunk via HTTP Event Collector
     public static void sendToSplunk(String event) {
         try {
-            String splunkUrl = "http://<splunk-server>:8088"; // Splunk HTTP Event Collector URL
-            String token = "<your-token>"; // Replace with your HEC token
+            String splunkUrl = "http://localhost:8088"; // Splunk HTTP Event Collector URL
+            String token = "58f41531-07c9-47de-a5af-cb2510d07f0d"; // Replace with your HEC token
 
             HttpClient client = HttpClients.createDefault();
             HttpPost post = new HttpPost(splunkUrl + "/services/collector/event");
