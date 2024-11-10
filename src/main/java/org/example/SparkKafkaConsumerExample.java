@@ -24,11 +24,12 @@ import java.util.Collections;
 public class SparkKafkaConsumerExample {
     public static void main(String[] args) throws InterruptedException {
         // Get the Kafka Bootstrap server from arguments or environment variable
-        String kafkaBootstrapServers = System.getenv("KAFKA_BOOTSTRAP_SERVERS");
-        if (kafkaBootstrapServers == null || kafkaBootstrapServers.isEmpty()) {
-            System.err.println("Error: KAFKA_BOOTSTRAP_SERVERS environment variable is not set.");
-            System.exit(1);
-        }
+//        String kafkaBootstrapServers = System.getenv("KAFKA_BOOTSTRAP_SERVERS");
+        String kafkaBootstrapServers = "localhost:9092";
+//        if (kafkaBootstrapServers == null || kafkaBootstrapServers.isEmpty()) {
+//            System.err.println("Error: KAFKA_BOOTSTRAP_SERVERS environment variable is not set.");
+//            System.exit(1);
+//        }
 
         // Kafka Consumer Configuration
         Map<String, Object> kafkaParams = new HashMap<>();
@@ -56,7 +57,7 @@ public class SparkKafkaConsumerExample {
         // Process Kafka messages (Trip Data)
         messages.foreachRDD(rdd -> {
             if (!rdd.isEmpty()) {
-                // Create a Spark session to process the data
+//                 Create a Spark session to process the data
                 SparkSession spark = SparkSession.builder()
                         .appName("SparkKafkaConsumer")
                         .getOrCreate();
@@ -70,9 +71,11 @@ public class SparkKafkaConsumerExample {
                         .add("trip_fare", DataTypes.DoubleType)
                         .add("timestamp", DataTypes.LongType);
 
-                // Convert RDD to DataFrame
-                JavaRDD<Object> tripDataRDD = rdd.map(ConsumerRecord::value);
-                Dataset<Row> tripDataDF = spark.read().json((Seq<String>) tripDataRDD);
+                // Convert RDD to Dataset directly
+                JavaRDD<String> tripDataRDD = rdd.map(ConsumerRecord::value);
+
+                // Create a DataFrame from the RDD of Strings (this step converts JSON strings into structured data)
+                Dataset<Row> tripDataDF = spark.read().json(tripDataRDD);
 
                 // Perform analysis on the trip data (e.g., calculate average fare, filter completed trips, etc.)
                 Dataset<Row> completedTripsDF = tripDataDF.filter(tripDataDF.col("trip_status").equalTo("completed"));
