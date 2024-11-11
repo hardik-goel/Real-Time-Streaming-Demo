@@ -21,6 +21,9 @@ public class FlinkKafkaConsumerExample {
         Properties properties = new Properties();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092"); // Kafka broker
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "flink-group");
+        // Start consuming from the latest offsets
+        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+
 
         // Create a Kafka consumer
         FlinkKafkaConsumer<String> consumer = new FlinkKafkaConsumer<>(
